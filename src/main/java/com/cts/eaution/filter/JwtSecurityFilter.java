@@ -10,6 +10,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.http.HttpRequest;
 import org.springframework.web.filter.GenericFilterBean;
 
 import io.jsonwebtoken.Claims;
@@ -27,6 +28,7 @@ public class JwtSecurityFilter extends GenericFilterBean {
 		
 		final String authHeader = ((HttpServletRequest) request).getHeader("authorization");
 		
+		
 		if ("OPTIONS".equals(((HttpServletRequest) request).getMethod())) {
 			((HttpServletResponse) response).setStatus(HttpServletResponse.SC_OK);
 			filterChain.doFilter(request, response);
@@ -38,7 +40,7 @@ public class JwtSecurityFilter extends GenericFilterBean {
 			final String token = authHeader.substring(7);
 			final Claims claims = Jwts.parser().setSigningKey("secretkey").parseClaimsJws(token).getBody();
 			request.setAttribute("claims", claims);
-
+			//set attribute wnt work for downsteam
 			// authorization - temp setup
 			HttpServletRequest httpRequest = (HttpServletRequest) request;
 			String path = httpRequest.getRequestURI().substring(httpRequest.getContextPath().length());
@@ -51,7 +53,7 @@ public class JwtSecurityFilter extends GenericFilterBean {
 				throw new ServletException("Unauthorized operation for the user");
 			} else if ((path.contains("buyer")) && (!userRole.equals("BUYER"))) {
 				throw new ServletException("Unauthorized operation for the user");
-			} else if ((path.contains("search-services")) && ((!userRole.equals("BUYER")) || (!userRole.equals("SELLER")))) {
+			} else if ((path.contains("search-services")) && (! ((userRole.equals("BUYER")) || (userRole.equals("SELLER"))))) {
 					throw new ServletException("Unauthorized operation for the user");
 			} else {
 				filterChain.doFilter(request, response);
